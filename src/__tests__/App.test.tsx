@@ -6,6 +6,7 @@ test('demo', () => {
     expect(true).toBeTruthy();
 });
 test('Renders the main page', () => {
-    render(<App/>);
+    const result = render(<App/>);
+    expect(result.findAllByText("App.tsx")).toBeTruthy();
     expect(true).toBeTruthy();
 });
