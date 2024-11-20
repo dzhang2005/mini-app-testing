@@ -1,0 +1,28 @@
+# kafka-values.yaml
+kraft:
+  enabled: true  # Use Kafka Raft mode (recommended for newer Kafka versions)
+
+replicaCount: 3  # Number of Kafka brokers
+
+persistence:
+  enabled: true
+  storageClass: "standard"  # Adjust to your cluster's storage class
+  size: 10Gi
+
+zookeeper:
+  enabled: true  # If you need Zookeeper (optional in Kafka Raft mode)
+  replicaCount: 3
+
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+metrics:
+  kafka:
+    enabled: true
+  jmx:
+    enabled: true

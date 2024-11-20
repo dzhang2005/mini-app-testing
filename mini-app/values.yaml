@@ -1,0 +1,23 @@
+image:
+  repository: dzhang1967/mini-app-testing
+  tag: latest
+mongodb:
+  image: "mongo:latest"
+  service:
+    name: "mongodb-service"
+    port: 27017
+  volume:
+    name: "mongodb-data"
+    mountPath: "/data/db"
+    size: "1Gi"
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

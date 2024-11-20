@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-mongodb
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: {{ .Values.mongodb.image }}
+          ports:
+            - containerPort: {{ .Values.mongodb.service.port }}
+          volumeMounts:
+            - name: {{ .Values.mongodb.volume.name | default "default-volume-name" }}
+              mountPath: {{ .Values.mongodb.volume.mountPath | default "/data/db" }}
+      volumes:
+        - name: {{ .Values.mongodb.volume.name | default "default-volume-name" }}
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.mongodb.volume.name | default "default-volume-name" }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

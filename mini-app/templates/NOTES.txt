@@ -1,0 +1,18 @@
+Thank you for installing {{ .Chart.Name }}.
+
+{{- if .Values.ingress.enabled }}
+Your application can be accessed at:
+{{- range .Values.ingress.hosts }}
+  - http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+To get access to your application, run these commands:
+
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ .Release.Name }}-mongodb" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward $POD_NAME 27017:27017
+  
+MongoDB will be available at localhost:27017
+{{- end }}
+
+For more information about your deployment, try:
+  kubectl get all -l app={{ .Release.Name }}-mongodb

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hadoop
+  namespace: data-platform
+spec:
+  selector:
+    app: hadoop
+  ports:
+    - name: namenode
+      port: 8020
+      targetPort: 8020
+    - name: webhdfs
+      port: 9870
+      targetPort: 9870

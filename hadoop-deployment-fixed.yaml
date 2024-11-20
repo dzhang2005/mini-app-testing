@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hadoop
+  namespace: data-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hadoop
+  template:
+    metadata:
+      labels:
+        app: hadoop
+    spec:
+      containers:
+      - name: hadoop
+        image: apache/hadoop:3
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8020
+        - containerPort: 9870
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
