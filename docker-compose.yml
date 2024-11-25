@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   zookeeper:
     image: bitnami/zookeeper:latest
@@ -6,27 +6,57 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - "2181:2181"
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   kafka:
     image: bitnami/kafka:3.9.0-debian-12-r1
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092  # Changed from localhost to kafka
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL_PLAINTEXT://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL_PLAINTEXT://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL_PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      # Add broker ID for scalability
+      - KAFKA_BROKER_ID=1
+      # Add default replication factor
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - kafka_data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   kafka-ui:
-    image: obsidiandynamics/kafdrop
-    restart: "no"
+    image: obsidiandynamics/kafdrop:latest
+    restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "9001:9000"
     environment:
-      KAFKA_BROKERCONNECT: "kafka:9092"  # This is correct
-      JVM_OPTS: "-Xms16M -Xmx512M -XX:-TieredCompilation"
+      KAFKA_BROKERCONNECT: "kafka:9092"
+      JVM_OPTS: "-Xms32M -Xmx512M -XX:-TieredCompilation"
+      SERVER_SERVLET_CONTEXTPATH: "/"
     depends_on:
-      - kafka
-      - zookeeper
+      kafka:
+        condition: service_healthy
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
